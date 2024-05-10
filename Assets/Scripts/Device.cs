@@ -3,23 +3,22 @@ using System.Collections;
 
 namespace UnityAvatar
 {
+    public struct Resolution
+    {
+        public int Width;
+        public int Height;
+
+        public Resolution(int width, int height)
+        {
+            this.Width = width;
+            this.Height = height;
+        }
+    }
+
     public abstract class Device : MonoBehaviour
     {
-        public struct Resolution
-        {
-            public int width;
-            public int height;
-
-            public Resolution(int width, int height)
-            {
-                this.width = width;
-                this.height = height;
-            }
-        }
-
-        public Texture texture;
-        public Resolution resolution;
-
+        public Texture Texture;
+        public Resolution Resolution;
         public abstract IEnumerator Init();
     }    
 }

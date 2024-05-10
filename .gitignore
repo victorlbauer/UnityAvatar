@@ -72,3 +72,12 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 README.md
+
+# Mediapipe package
+/[Aa]ssets/[Mm]ediapipeUnity/
+/[Aa]ssets/[Mm]ediapipeUnity.meta
+/[Pp]ackages/com.github.homuler.mediapipe/
+
+# Avatar folder
+/[Aa]ssets/Avatars/
+/[Aa]ssets/Avatars.meta

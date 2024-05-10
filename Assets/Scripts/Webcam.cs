@@ -15,18 +15,18 @@ namespace UnityAvatar
 
             var device = WebCamTexture.devices.First();
 
-            this.texture = new WebCamTexture();
-            this.webCamTexture = this.texture as WebCamTexture;
+            this.Texture = new WebCamTexture();
+            this.webCamTexture = this.Texture as WebCamTexture;
             this.webCamTexture.Play();
 
             yield return new WaitUntil(() => this.webCamTexture.width > 16);
 
-            this.resolution = new Resolution(this.webCamTexture.width, this.webCamTexture.height);
+            this.Resolution = new Resolution(this.webCamTexture.width, this.webCamTexture.height);
         }
 
         private void OnDestroy()
         {
-            if(this.texture is not null)
+            if(this.Texture is not null)
                 this.webCamTexture.Stop();
         }
     }
