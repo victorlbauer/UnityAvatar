@@ -38,13 +38,14 @@ namespace UnityAvatar
 
     public class MediapipeContext : MonoBehaviour
     {
-        public class Landmark
+        public struct Landmark
         {
             public Vector3 Position;
             public Landmark(Vector3 position) => Position = position;
         }
 
         public const int LandmarkCount = 33;
+        public bool DataReady = false;
 
         public List<Landmark> Landmarks;
         public List<Landmark> WorldLandmarks;

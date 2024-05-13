@@ -7,7 +7,7 @@ using Mediapipe;
 
 namespace UnityAvatar
 {
-    public enum DeviceType { WEBCAM }
+    public enum DeviceType { Webcam }
 
     public class Solution : MonoBehaviour
     {
@@ -15,26 +15,35 @@ namespace UnityAvatar
         [SerializeField] private DeviceType deviceType;
      
         private Device device;
+        private Avatar avatar;
         private MediapipeContext mediapipeContext;
+
+        private bool isRunning = false;
 
         private IEnumerator Start()
         {
+            this.avatar = GetComponent<Avatar>();
+            this.avatar.Init();
+
             yield return StartCoroutine(SelectDevice());
             yield return StartCoroutine(InitMediapipe());
 
             RunMediapipe();
+
+            this.isRunning = true;
         }
 
         private void FixedUpdate()
         {
-
+            if(this.isRunning)
+                this.avatar.UpdateJoints(ref this.mediapipeContext.WorldLandmarks);
         }
 
         private IEnumerator SelectDevice()
         {
             switch(this.deviceType)
             {
-                case DeviceType.WEBCAM:
+                case DeviceType.Webcam:
                 {
                     var obj = new GameObject("Webcam", typeof(Webcam));
                     this.device = obj.GetComponent<Webcam>();
