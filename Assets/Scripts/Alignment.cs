@@ -28,11 +28,8 @@ namespace UnityAvatar
         {
             for(int i = 0; i < MediapipeContext.LandmarkCount; ++i)
             {
-                Vector3 landmarkWorldPos = avatar.Transform.position + Vector3.Scale(worldLandmarks[i].Position, avatar.Transform.localScale);
-                this.source[i] = this.camera.WorldToScreenPoint(landmarkWorldPos);
-
-                Vector3 landmarkPos = landmarks[i].Position;
-                this.target[i] = LandmarkToScreenPoint(landmarkPos);
+                this.source[i] = this.camera.WorldToScreenPoint(worldLandmarks[i].Position);
+                this.target[i] = LandmarkToScreenPoint(landmarks[i].Position);
             }
         }
 
@@ -51,13 +48,15 @@ namespace UnityAvatar
             float targetScaling = 1.0f;
 
             for(int i = 0; i < MediapipeContext.LandmarkCount; ++i)
-            {
+            {    
                 sourceScaling += Vector3.Distance(this.source[i], sourceHipsPos) / MediapipeContext.LandmarkCount;
                 targetScaling += Vector3.Distance(this.target[i], targetHipsPos) / MediapipeContext.LandmarkCount;
             }
-
-            avatar.Transform.localScale *= (targetScaling / sourceScaling);
+            
+            float scale = targetScaling / sourceScaling;
+            avatar.Transform.localScale = new Vector3(scale * camera.aspect, scale, scale);
         }
+
 
         private void TranslateToTarget(ref Avatar avatar)
         {

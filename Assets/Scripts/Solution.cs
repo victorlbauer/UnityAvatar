@@ -44,7 +44,7 @@ namespace UnityAvatar
             if(this.isRunning)
             {
                 this.avatar.UpdateJoints(ref this.mediapipeContext.WorldLandmarks);
-                this.alignment.AlignToScreen(ref this.avatar, ref this.mediapipeContext.WorldLandmarks, ref this.mediapipeContext.Landmarks);   
+                this.alignment.AlignToScreen(ref this.avatar, ref this.mediapipeContext.WorldLandmarks, ref this.mediapipeContext.Landmarks);
             }
         }
 
