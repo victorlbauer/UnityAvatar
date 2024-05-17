@@ -62,8 +62,8 @@ namespace UnityAvatar
         public IEnumerator Init(Device device)
         {
             var cwd = Directory.GetCurrentDirectory();
-            //var configFilePath = File.ReadAllText(Path.Combine(cwd, "Assets/cpuconfig.txt"));
-            var configFilePath = File.ReadAllText(Path.Combine(cwd, "Assets/gpuconfig.txt"));
+            var configFilePath = File.ReadAllText(Path.Combine(cwd, "Assets/cpuconfig.txt"));
+            // var configFilePath = File.ReadAllText(Path.Combine(cwd, "Assets/gpuconfig.txt"));
             this.graph = new CalculatorGraph(configFilePath);
 
             this.inputBuffer = new Color32[device.Resolution.Width * device.Resolution.Height];

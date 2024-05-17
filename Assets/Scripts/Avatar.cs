@@ -123,7 +123,6 @@ namespace UnityAvatar
             Vector3 midPointUpper = 0.5f * leftShoulder.LandmarkPosition + 0.5f * rightShoulder.LandmarkPosition;
 
             // TODO: improve estimations
-
             // Hips
             this.joints[(int)MediapipeJoints.LandmarkId.Hips].LandmarkPosition = Lerp(midPointBottom, midPointUpper, 0.05f);
 
@@ -135,7 +134,12 @@ namespace UnityAvatar
             
             // Head
             this.joints[(int)MediapipeJoints.LandmarkId.Head].LandmarkPosition = Lerp(this.joints[(int)MediapipeJoints.LandmarkId.Neck].LandmarkPosition, Vector3.up, 0.15f);
-        
+         
+            var nosePos = this.joints[(int)MediapipeJoints.LandmarkId.Nose].LandmarkPosition;
+            var earPos  = this.joints[(int)MediapipeJoints.LandmarkId.RightEar].LandmarkPosition;
+            
+            Debug.Log($"{nosePos.z}, {earPos.z}");
+
             // Lerp
             foreach(Joint joint in this.joints)
             {
