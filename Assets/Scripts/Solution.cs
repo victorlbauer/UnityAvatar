@@ -16,6 +16,7 @@ namespace UnityAvatar
      
         private Device device;
         private Avatar avatar;
+        private Alignment alignment;
         private MediapipeContext mediapipeContext;
 
         private bool isRunning = false;
@@ -25,10 +26,15 @@ namespace UnityAvatar
             this.avatar = GetComponent<Avatar>();
             this.avatar.Init();
 
+            this.alignment = GetComponent<Alignment>();
+            this.alignment.Init();
+
             yield return StartCoroutine(SelectDevice());
             yield return StartCoroutine(InitMediapipe());
 
             RunMediapipe();
+
+            yield return new WaitUntil(() => this.mediapipeContext.IsReady);
 
             this.isRunning = true;
         }
@@ -36,7 +42,10 @@ namespace UnityAvatar
         private void FixedUpdate()
         {
             if(this.isRunning)
+            {
                 this.avatar.UpdateJoints(ref this.mediapipeContext.WorldLandmarks);
+                this.alignment.AlignToScreen(ref this.avatar, ref this.mediapipeContext.WorldLandmarks, ref this.mediapipeContext.Landmarks);   
+            }
         }
 
         private IEnumerator SelectDevice()
@@ -76,5 +85,4 @@ namespace UnityAvatar
             StartCoroutine(this.mediapipeContext.Run(this.device.Texture));
         }
     }
-
 }

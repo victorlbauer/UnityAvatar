@@ -19,25 +19,24 @@ namespace UnityAvatar
             public Joint Child = null;
         }
 
-        [Header("Avatar")]
+        [Header("FBX Model")]
         [SerializeField] private GameObject prefab;
 
+        private GameObject avatar;
         private Animator anim;
-        private Vector3 anchorPoint;
-        private Vector3 scale;
         private Joint[] joints;
+
+        public Transform Transform => this.avatar.transform;
 
         public void Init()
         {
             var spawn = GameObject.Find("Stage/Spawn");
-            var avatar = Instantiate(this.prefab, spawn.transform.position, Quaternion.identity);
-
-            this.anim = avatar.GetComponent<Animator>();
+            this.avatar = Instantiate(this.prefab, spawn.transform.position, Quaternion.identity);
+            this.anim = this.avatar.GetComponent<Animator>();
 
             // Hips act as the anchor point
-            this.anchorPoint = this.anim.GetBoneTransform(HumanBodyBones.Hips).position;
-            this.scale = avatar.transform.localScale;
-
+            this.avatar.transform.position = this.anim.GetBoneTransform(HumanBodyBones.Hips).position;
+           
             GetJoints();
         }
 
@@ -50,13 +49,13 @@ namespace UnityAvatar
             Joint rightHip = this.joints[(int)MediapipeJoints.LandmarkId.RightHip];
             Vector3 forward = GetNormal(hips.LandmarkPosition, leftHip.LandmarkPosition, rightHip.LandmarkPosition);
 
-            hips.Transform.position = hips.LandmarkPosition + this.anchorPoint;
+            hips.Transform.position = hips.LandmarkPosition + this.avatar.transform.position;
             hips.Transform.rotation = Quaternion.LookRotation(forward) * hips.Inverse * hips.InitRotation;
 
             foreach(Joint joint in this.joints)
             {
                 if(joint.Transform is not null)
-                    joint.Transform.position = this.anchorPoint + Vector3.Scale(joint.LandmarkPosition, this.scale);
+                    joint.Transform.position = this.avatar.transform.position + Vector3.Scale(joint.LandmarkPosition, this.avatar.transform.localScale);
 
                 if(joint.Child is not null)
                     joint.Transform.rotation = Quaternion.LookRotation(joint.LandmarkPosition - joint.Child.LandmarkPosition, forward) * joint.Inverse * joint.InitRotation;

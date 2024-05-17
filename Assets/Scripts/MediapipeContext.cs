@@ -45,7 +45,7 @@ namespace UnityAvatar
         }
 
         public const int LandmarkCount = 33;
-        public bool DataReady = false;
+        public bool IsReady = false;
 
         public List<Landmark> Landmarks;
         public List<Landmark> WorldLandmarks;
@@ -58,11 +58,12 @@ namespace UnityAvatar
 
         private OutputStream<NormalizedLandmarkList> poseLandmarkStream;
         private OutputStream<LandmarkList> poseWorldLandmarkStream;
-        
+
         public IEnumerator Init(Device device)
         {
             var cwd = Directory.GetCurrentDirectory();
-            var configFilePath = File.ReadAllText(Path.Combine(cwd, "Assets/cpuconfig.txt"));
+            //var configFilePath = File.ReadAllText(Path.Combine(cwd, "Assets/cpuconfig.txt"));
+            var configFilePath = File.ReadAllText(Path.Combine(cwd, "Assets/gpuconfig.txt"));
             this.graph = new CalculatorGraph(configFilePath);
 
             this.inputBuffer = new Color32[device.Resolution.Width * device.Resolution.Height];
@@ -95,6 +96,7 @@ namespace UnityAvatar
                 var timestamp = stopwatch.ElapsedTicks / (System.TimeSpan.TicksPerMillisecond / 1000);
                 yield return StartCoroutine(SetGraphInput(timestamp, inputTexture));
                 yield return StartCoroutine(GetLandmarks());
+                this.IsReady = true;
             }
         }
 
@@ -187,7 +189,7 @@ namespace UnityAvatar
 
         private Vector3 GetLandmarkPosition(Mediapipe.NormalizedLandmark landmark)
         {
-            return new Vector3(landmark.X, -landmark.Y, landmark.Z);
+            return new Vector3(landmark.X, landmark.Y, landmark.Z);
         }
 
         private Vector3 GetLandmarkPosition(Mediapipe.Landmark landmark)
