@@ -131,14 +131,9 @@ namespace UnityAvatar
             
             // Neck
             this.joints[(int)MediapipeJoints.LandmarkId.Neck].LandmarkPosition = Lerp(midPointBottom, midPointUpper, 1.05f);
-            
+
             // Head
             this.joints[(int)MediapipeJoints.LandmarkId.Head].LandmarkPosition = Lerp(this.joints[(int)MediapipeJoints.LandmarkId.Neck].LandmarkPosition, Vector3.up, 0.15f);
-         
-            var nosePos = this.joints[(int)MediapipeJoints.LandmarkId.Nose].LandmarkPosition;
-            var earPos  = this.joints[(int)MediapipeJoints.LandmarkId.RightEar].LandmarkPosition;
-            
-            Debug.Log($"{nosePos.z}, {earPos.z}");
 
             // Lerp
             foreach(Joint joint in this.joints)
