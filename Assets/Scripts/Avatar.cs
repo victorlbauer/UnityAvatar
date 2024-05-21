@@ -9,8 +9,8 @@ namespace UnityAvatar
     {
         public class Joint
         {
-            public Vector3 LandmarkPosition;
-            public Vector3 LastLandmarkPosition;
+            public Vector3 Position;
+            public Vector3 LastPosition;
 
             public Transform Transform = null;
             public Quaternion InitRotation;
@@ -44,21 +44,24 @@ namespace UnityAvatar
         {
             GetLandmarkWorldPosition(ref landmarks);
             
+            // Body rotation
             Joint hips = this.joints[(int)MediapipeJoints.LandmarkId.Hips];
             Joint leftHip = this.joints[(int)MediapipeJoints.LandmarkId.LeftHip];
             Joint rightHip = this.joints[(int)MediapipeJoints.LandmarkId.RightHip];
-            Vector3 forward = GetNormal(hips.LandmarkPosition, leftHip.LandmarkPosition, rightHip.LandmarkPosition);
 
-            hips.Transform.position = hips.LandmarkPosition + this.avatar.transform.position;
+            Vector3 forward = GetNormal(hips.Position, leftHip.Position, rightHip.Position);
+
+            hips.Transform.position = hips.Position + this.avatar.transform.position;
             hips.Transform.rotation = Quaternion.LookRotation(forward) * hips.Inverse * hips.InitRotation;
 
+            // Position and rotate the other joints
             foreach(Joint joint in this.joints)
             {
                 if(joint.Transform is not null)
-                    joint.Transform.position = this.avatar.transform.position + Vector3.Scale(joint.LandmarkPosition, this.avatar.transform.localScale);
+                    joint.Transform.position = this.avatar.transform.position + Vector3.Scale(joint.Position, this.avatar.transform.localScale);
 
                 if(joint.Child is not null)
-                    joint.Transform.rotation = Quaternion.LookRotation(joint.LandmarkPosition - joint.Child.LandmarkPosition, forward) * joint.Inverse * joint.InitRotation;
+                    joint.Transform.rotation = Quaternion.LookRotation(joint.Position - joint.Child.Position, forward) * joint.Inverse * joint.InitRotation;
             }
 
             // Head rotation
@@ -67,8 +70,10 @@ namespace UnityAvatar
             Joint nose = this.joints[(int)MediapipeJoints.LandmarkId.Nose];
             Joint head = this.joints[(int)MediapipeJoints.LandmarkId.Head];
 
-            Vector3 gaze = Vector3.Normalize(nose.LandmarkPosition - (0.5f * leftEar.LandmarkPosition + 0.5f * rightEar.LandmarkPosition));
-            head.Transform.rotation = Quaternion.LookRotation(gaze) * head.Inverse * head.InitRotation;
+            Vector3 headForward = Vector3.Normalize(nose.Position - (0.5f * leftEar.Position + 0.5f * rightEar.Position));
+            Vector3 headUp = Vector3.Cross(Vector3.Normalize(leftEar.Position - rightEar.Position), headForward);
+           
+            head.Transform.rotation = Quaternion.LookRotation(headForward, headUp) * head.Inverse * head.InitRotation;
         }
 
         private void GetJoints()
@@ -111,35 +116,43 @@ namespace UnityAvatar
         private void GetLandmarkWorldPosition(ref List<MediapipeContext.Landmark> landmarks)
         {
             for(int i = 0; i < MediapipeContext.LandmarkCount; ++i)
-                this.joints[i].LandmarkPosition = landmarks[i].Position;
+                this.joints[i].Position = landmarks[i].Position;
 
             // Not given by Mediapipe, we need to manually calculate it
-            Joint leftHip = this.joints[(int)MediapipeJoints.LandmarkId.LeftHip];
-            Joint rightHip = this.joints[(int)MediapipeJoints.LandmarkId.RightHip];
+            Joint nose = this.joints[(int)MediapipeJoints.LandmarkId.Nose];
+            Joint leftEar = this.joints[(int)MediapipeJoints.LandmarkId.LeftEar];
+            Joint rightEar = this.joints[(int)MediapipeJoints.LandmarkId.RightEar];
+            Joint neck = this.joints[(int)MediapipeJoints.LandmarkId.Neck];
+            Joint head = this.joints[(int)MediapipeJoints.LandmarkId.Head];
             Joint leftShoulder = this.joints[(int)MediapipeJoints.LandmarkId.LeftShoulder];
             Joint rightShoulder = this.joints[(int)MediapipeJoints.LandmarkId.RightShoulder];
+            Joint leftHip = this.joints[(int)MediapipeJoints.LandmarkId.LeftHip];
+            Joint rightHip = this.joints[(int)MediapipeJoints.LandmarkId.RightHip];
+            Joint hips = this.joints[(int)MediapipeJoints.LandmarkId.Hips];
+            Joint spine = this.joints[(int)MediapipeJoints.LandmarkId.Spine];
+            
+            Vector3 midPointBottom = 0.5f * leftHip.Position + 0.5f * rightHip.Position;
+            Vector3 midPointUpper = 0.5f * leftShoulder.Position + 0.5f * rightShoulder.Position;
 
-            Vector3 midPointBottom = 0.5f * leftHip.LandmarkPosition + 0.5f * rightHip.LandmarkPosition;
-            Vector3 midPointUpper = 0.5f * leftShoulder.LandmarkPosition + 0.5f * rightShoulder.LandmarkPosition;
-
-            // TODO: improve estimations
             // Hips
-            this.joints[(int)MediapipeJoints.LandmarkId.Hips].LandmarkPosition = Lerp(midPointBottom, midPointUpper, 0.05f);
+            hips.Position = Vector3.Lerp(midPointBottom, midPointUpper, 0.05f);
 
             // Spine
-            this.joints[(int)MediapipeJoints.LandmarkId.Spine].LandmarkPosition = Lerp(midPointBottom, midPointUpper, 0.25f);
+            spine.Position = Vector3.Lerp(midPointBottom, midPointUpper, 0.25f);
             
             // Neck
-            this.joints[(int)MediapipeJoints.LandmarkId.Neck].LandmarkPosition = Lerp(midPointBottom, midPointUpper, 1.05f);
-
+            neck.Position = Vector3.Lerp(leftShoulder.Position, rightShoulder.Position, 0.5f);
+            
             // Head
-            this.joints[(int)MediapipeJoints.LandmarkId.Head].LandmarkPosition = Lerp(this.joints[(int)MediapipeJoints.LandmarkId.Neck].LandmarkPosition, Vector3.up, 0.15f);
+            Vector3 headForward = Vector3.Normalize(nose.Position - (0.5f * leftEar.Position + 0.5f * rightEar.Position));
+            Vector3 headUp = Vector3.Cross(Vector3.Normalize(leftEar.Position - rightEar.Position), headForward);
+            head.Position = neck.Position + headUp * Vector3.Dot(nose.Position - neck.Position, headUp);
 
-            // Lerp
+            // Slerp
             foreach(Joint joint in this.joints)
             {
-                joint.LandmarkPosition = Lerp(joint.LandmarkPosition, joint.LastLandmarkPosition, 0.5f);
-                joint.LastLandmarkPosition = joint.LandmarkPosition;
+                joint.Position = Vector3.Slerp(joint.Position, joint.LastPosition, 0.5f);
+                joint.LastPosition = joint.Position;
             }
         }
 
@@ -161,11 +174,6 @@ namespace UnityAvatar
         private Quaternion GetInverse(Vector3 forward)
         {
             return Quaternion.Inverse(Quaternion.LookRotation(forward));
-        }
-
-        private Vector3 Lerp(Vector3 a, Vector3 b, float t)
-        {
-            return a + (b - a) * t;
         }
     }
 }
